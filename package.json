@@ -1,0 +1,11 @@
+{
+  "name": "pepites-game",
+  "version": "0.1.0",
+  "description": "Jeux de bar sur TV, téléphones comme manettes : Qui veut gagner des pépites ?",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test/simulation.js"
+  },
+  "engines": { "node": ">=18" }
+}

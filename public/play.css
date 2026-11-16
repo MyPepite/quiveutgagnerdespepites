@@ -1,0 +1,37 @@
+html { font-size: 16px; }
+body.phone { min-height: 100%; overflow-x: hidden; overscroll-behavior: none; -webkit-user-select: none; user-select: none; }
+#app { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
+#app > * { flex: 1; }
+.game-root { display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; }
+.game-root > .pp { flex: 1; }
+
+.status { position: fixed; top: 0; left: 0; right: 0; z-index: 10; background: var(--ko); color: #fff; text-align: center; font-weight: 700; font-size: 13px; padding: 4px; }
+
+/* ----- accueil / pseudo ----- */
+.welcome { display: flex; flex-direction: column; justify-content: center; gap: 18px; padding: 28px 22px; max-width: 460px; margin: 0 auto; width: 100%; }
+.welcome .brand { font-size: 26px; }
+.welcome h1 { font-size: 30px; line-height: 1.1; font-weight: 900; }
+.welcome p { color: var(--muted); font-size: 16px; line-height: 1.4; }
+.welcome form { display: grid; gap: 12px; }
+.welcome label { font-weight: 700; font-size: 15px; }
+.welcome input {
+  width: 100%; padding: 14px 16px; border-radius: 14px; border: 2px solid var(--line); background: rgba(255, 255, 255, 0.08);
+  font-size: 20px; font-weight: 700; -webkit-user-select: text; user-select: text;
+}
+.welcome input::placeholder { color: rgba(255, 255, 255, 0.35); font-weight: 500; }
+.welcome .btn { font-size: 20px; padding: 14px; }
+.welcome .err { color: #ffb3b8; font-weight: 700; min-height: 1.3em; }
+.welcome .code-input { text-transform: uppercase; letter-spacing: 0.3em; text-align: center; }
+
+/* ----- salle d'attente ----- */
+.wait { align-items: center; justify-content: center; text-align: center; gap: 14px; padding: 28px; }
+.wait img { width: 84px; height: 84px; animation: float 3s ease-in-out infinite; filter: drop-shadow(0 0 20px rgba(245, 184, 61, 0.5)); }
+.wait h2 { font-size: 28px; font-weight: 900; }
+.wait p { color: var(--muted); font-size: 17px; line-height: 1.4; max-width: 20em; }
+.wait .me { color: var(--gold-hi); font-weight: 900; }
+
+#toast {
+  position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); opacity: 0; pointer-events: none; z-index: 20;
+  background: #fff; color: #1b1b2b; font-weight: 700; padding: 10px 16px; border-radius: 12px; font-size: 15px; transition: all 0.25s; max-width: 90vw; text-align: center;
+}
+#toast.show { opacity: 1; transform: translate(-50%, 0); }
