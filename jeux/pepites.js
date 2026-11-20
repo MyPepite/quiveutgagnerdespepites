@@ -69,6 +69,7 @@ function loadBank() {
       good,
       wrong: wrong.map((w) => w.trim()),
       level,
+      theme: typeof item.theme === 'string' && item.theme.trim() ? item.theme.trim() : 'culture_g',
       category: typeof item.categorie === 'string' ? item.categorie.trim() : '',
       anecdote: typeof item.anecdote === 'string' ? item.anecdote.trim() : '',
     });
@@ -76,17 +77,35 @@ function loadBank() {
   return { questions, problems };
 }
 
-const MAX_TIER = 6; // niveau 6 = « très difficile », réservé à la toute dernière question
+const MAX_TIER = 6; // niveau 6 = « très difficile »
 
-// Niveau de difficulté de la question n° `rung` (1 = première) dans une partie de `total` questions :
-// les niveaux 1 à 5 se répartissent régulièrement sur toutes les questions sauf la dernière,
-// et la dernière est toujours de niveau 6.
+// Courbe de difficulté : le niveau monte progressivement, et les dernières questions sont toujours difficiles
+// (la toute dernière est de niveau 6).
+const CURVES = {
+  5: [1, 3, 4, 5, 6],
+  10: [1, 2, 3, 3, 4, 4, 5, 5, 6, 6],
+  15: [1, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 5, 6, 6],
+};
+
+// Niveau de difficulté de la question n° `rung` (1 = première) dans une partie de `total` questions.
 function tierForRung(rung, total) {
+  const curve = CURVES[total];
+  if (curve) return curve[Math.min(rung, total) - 1];
   if (rung >= total) return MAX_TIER;
-  return 1 + Math.floor(((rung - 1) * (MAX_TIER - 1)) / (total - 1));
+  const c = CURVES[15];
+  return c[Math.round(((rung - 1) * (c.length - 1)) / Math.max(1, total - 1))];
 }
 
-// Choisit une question par cran de l'échelle, de plus en plus difficile, en évitant les répétitions.
+// Les thèmes « football » et « sports » comptent comme un seul groupe pour la variété.
+const groupOf = (q) => (q.theme === 'football' || q.theme === 'sports' ? 'sports' : q.theme);
+
+// Maximum de questions d'un même thème (et du groupe sport) dans une partie.
+function limitsFor(total) {
+  return { perTheme: total <= 5 ? 1 : 2, sports: total <= 5 ? 1 : total <= 10 ? 2 : 3 };
+}
+
+// Choisit une question par cran de la courbe de difficulté, en variant les thèmes (jamais deux questions
+// du même thème d'affilée, pas plus de 2 par thème et peu de sport) et en évitant les répétitions.
 // `used` mémorise les questions déjà posées dans la salle : tant qu'il reste des questions jamais posées
 // à un niveau, on ne repioche pas une question déjà vue.
 function pickQuestions(bank, total, used) {
@@ -95,22 +114,57 @@ function pickQuestions(bank, total, used) {
   bank.forEach((q) => byTier[q.level].push(q));
   const picked = [];
   const pickedKeys = new Set();
+  const lim = limitsFor(total);
 
   function pickOne(tier) {
-    const order = [tier];
-    for (let d = 1; d < MAX_TIER; d++) {
-      if (tier - d >= 1) order.push(tier - d);
-      if (tier + d <= MAX_TIER) order.push(tier + d);
-    }
-    for (const t of order) {
-      const notPicked = byTier[t].filter((q) => !pickedKeys.has(q.key));
-      if (!notPicked.length) continue;
-      let fresh = notPicked.filter((q) => !used.has(q.key));
-      if (!fresh.length) {
-        notPicked.forEach((q) => used.delete(q.key));
-        fresh = notPicked;
+    const prev = picked.length ? picked[picked.length - 1] : null;
+    const themeCount = {};
+    let sportsCount = 0;
+    picked.forEach((q) => {
+      themeCount[q.theme] = (themeCount[q.theme] || 0) + 1;
+      if (groupOf(q) === 'sports') sportsCount++;
+    });
+    // Du plus strict au plus souple : on assouplit seulement si rien d'autre n'est disponible.
+    const rules = [
+      (q) => (themeCount[q.theme] || 0) < lim.perTheme && (groupOf(q) !== 'sports' || sportsCount < lim.sports) && !(prev && groupOf(q) === groupOf(prev)),
+      (q) => (themeCount[q.theme] || 0) < lim.perTheme && (groupOf(q) !== 'sports' || sportsCount < lim.sports),
+      (q) => !(prev && q.theme === prev.theme),
+      () => true,
+    ];
+    const dist = (t) => Math.abs(t - tier);
+    const sets = [
+      [(t) => dist(t) === 0, 0],
+      [(t) => dist(t) === 0, 1],
+      [(t) => dist(t) <= 1, 0],
+      [(t) => dist(t) <= 1, 1],
+      [(t) => dist(t) === 0, 2],
+      [(t) => dist(t) === 0, 3],
+      [() => true, 2],
+      [() => true, 3],
+    ];
+    // D'abord uniquement des questions jamais posées dans la salle ; si plus rien, on recycle.
+    for (const wantFresh of [true, false]) {
+      for (const [tierOk, ruleIndex] of sets) {
+        const cands = [];
+        for (let t = 1; t <= MAX_TIER; t++) {
+          if (!tierOk(t)) continue;
+          byTier[t].forEach((q) => {
+            if (pickedKeys.has(q.key) || !rules[ruleIndex](q)) return;
+            if (wantFresh && used.has(q.key)) return;
+            cands.push(q);
+          });
+        }
+        if (!cands.length) continue;
+        // Au plus près du niveau voulu, puis on tire d'abord un thème au hasard pour équilibrer les thèmes.
+        const best = Math.min(...cands.map((q) => dist(q.level)));
+        const near = cands.filter((q) => dist(q.level) === best);
+        const themes = [...new Set(near.map((q) => q.theme))];
+        const theme = themes[Math.floor(Math.random() * themes.length)];
+        const pool = near.filter((q) => q.theme === theme);
+        const choice = pool[Math.floor(Math.random() * pool.length)];
+        if (!wantFresh) near.forEach((q) => used.delete(q.key));
+        return choice;
       }
-      return fresh[Math.floor(Math.random() * fresh.length)];
     }
     return null;
   }
