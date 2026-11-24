@@ -7,7 +7,7 @@
  *   - bonne réponse  -> il monte d'un cran ;
  *   - mauvaise réponse ou pas de réponse -> il n'est PAS éliminé : il retombe au dernier PALIER franchi
  *     (ou à zéro s'il n'en a franchi aucun) et repart de là à la question suivante ;
- *   - joker 50:50 -> une seule fois par partie et par joueur, il retire 2 mauvaises réponses (pour lui seul).
+ *   - joker 50:50 -> 2 jokers par partie et par joueur (un seul par question), chacun retire 2 mauvaises réponses (pour lui seul).
  * La partie dure jusqu'à la dernière question. Le classement final se fait sur les pépites,
  * puis sur le nombre de bonnes réponses, puis sur la rapidité.
  */
@@ -15,6 +15,8 @@ const fs = require('fs');
 const path = require('path');
 
 const BANK_FILE = path.join(__dirname, '..', 'donnees', 'questions-pepites.json');
+
+const JOKERS_PER_GAME = 2;
 
 const LADDERS = {
   5: { values: [100, 300, 1000, 3000, 10000], paliers: [3] },
@@ -82,9 +84,9 @@ const MAX_TIER = 6; // niveau 6 = « très difficile »
 // Courbe de difficulté : le niveau monte progressivement, et les dernières questions sont toujours difficiles
 // (la toute dernière est de niveau 6).
 const CURVES = {
-  5: [1, 3, 4, 5, 6],
-  10: [1, 2, 3, 3, 4, 4, 5, 5, 6, 6],
-  15: [1, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 5, 6, 6],
+  5: [1, 1, 2, 4, 6],
+  10: [1, 1, 2, 2, 3, 4, 4, 5, 6, 6],
+  15: [1, 1, 1, 2, 2, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6],
 };
 
 // Niveau de difficulté de la question n° `rung` (1 = première) dans une partie de `total` questions.
@@ -229,7 +231,7 @@ class PepitesGame {
         securedLevel: 0, // dernier palier franchi : c'est là qu'on retombe après une erreur
         gain: 0,
         secured: 0,
-        jokerUsed: false,
+        jokersLeft: JOKERS_PER_GAME,
         hidden: [],
         hiddenQ: 0,
         answer: null,
@@ -299,13 +301,14 @@ class PepitesGame {
     if (this.phase !== 'question') return { error: 'Le joker s’utilise pendant une question.' };
     const p = this.players.get(pid);
     if (!p) return { error: 'Tu ne participes pas à cette partie.' };
-    if (p.jokerUsed) return { error: 'Tu as déjà utilisé ton joker.' };
+    if (p.jokersLeft <= 0) return { error: 'Tu as utilisé tous tes jokers.' };
+    if (p.hiddenQ === this.q) return { error: 'Un seul joker par question.' };
     if (p.answer !== null) return { error: 'Tu as déjà répondu.' };
     const q = this.questions[this.q - 1];
     const wrongIdx = [0, 1, 2, 3].filter((i) => i !== q.correct);
     p.hidden = shuffle(wrongIdx).slice(0, 2).sort();
     p.hiddenQ = this.q;
-    p.jokerUsed = true;
+    p.jokersLeft -= 1;
     this.ctx.broadcastSoon();
     return { ok: true };
   }
@@ -439,7 +442,8 @@ class PepitesGame {
     if (p) {
       s.gain = p.gain; // pépites actuellement en jeu
       s.secured = p.secured; // pépites assurées par le dernier palier
-      s.jokerUsed = p.jokerUsed;
+      s.jokersLeft = p.jokersLeft;
+      s.jokersTotal = JOKERS_PER_GAME;
     }
     if (this.phase === 'intro' && !this.manual) s.remainingMs = Math.max(0, this.introEnd - now);
     if (this.phase === 'question' || this.phase === 'reveal') {
@@ -453,7 +457,7 @@ class PepitesGame {
       if (p) s.myAnswer = p.answer;
       if (this.phase === 'question') {
         s.remainingMs = Math.max(0, this.deadline - now);
-        s.jokerAvailable = !!(p && !p.jokerUsed && p.answer === null);
+        s.jokerAvailable = !!(p && p.jokersLeft > 0 && p.hiddenQ !== this.q && p.answer === null);
       } else {
         s.correct = q.correct;
         s.result = p && p.lastQ === this.q ? p.lastResult : null;
