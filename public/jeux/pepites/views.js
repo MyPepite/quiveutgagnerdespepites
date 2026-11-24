@@ -43,7 +43,7 @@
       h('ul', { class: 'rules' },
         h('li', { text: s.total + ' questions, de plus en plus difficiles' }),
         h('li', { text: 'Une erreur ne vous élimine pas : vous retombez au dernier palier franchi (' + paliers.join(' puis ') + ' pépites) et vous repartez de là' }),
-        h('li', { text: 'Un joker 50:50 par joueur, à utiliser sur votre téléphone' })),
+        h('li', { text: 'Deux jokers 50:50 par joueur (un par question), à utiliser sur votre téléphone' })),
       refs.count);
     return refs;
   }
@@ -245,7 +245,7 @@
       return { btn, txt };
     });
     refs.timerBar = h('div', { class: 'bar' });
-    refs.joker = h('button', { class: 'joker', type: 'button', onclick: () => useJoker() }, h('b', { text: '50:50' }), h('span', { text: 'Retire 2 réponses' }));
+    refs.joker = h('button', { class: 'joker', type: 'button', onclick: () => useJoker() }, h('b', { text: '50:50 ×2' }), h('span', { text: 'Retire 2 réponses' }));
     refs.msg = h('div', { class: 'pp-note', role: 'status' });
     refs.banner = h('div', { class: 'pp-banner', hidden: true });
     refs.question = h('div', { class: 'pp-question' });
@@ -302,8 +302,10 @@
     if (s.phase === 'question') {
       const deadline = Date.now() + s.remainingMs;
       r.joker.disabled = !s.jokerAvailable || mine != null;
-      r.joker.classList.toggle('used', !!s.jokerUsed);
-      r.joker.querySelector('span').textContent = s.jokerUsed ? 'Déjà utilisé' : 'Retire 2 réponses';
+      const left = s.jokersLeft == null ? 0 : s.jokersLeft;
+      r.joker.classList.toggle('used', left <= 0);
+      r.joker.querySelector('b').textContent = '50:50 ×' + left;
+      r.joker.querySelector('span').textContent = left <= 0 ? 'Plus de joker' : (s.hidden && s.hidden.length ? 'Un seul par question' : 'Retire 2 réponses');
       r.val.textContent = 'Pour ' + fmt(s.nextValue) + ' pépites';
       r.msg.textContent = mine != null
         ? 'Réponse envoyée. Regarde l’écran !'
@@ -317,8 +319,10 @@
       root._tick = null;
       r.timerBar.style.transform = 'scaleX(0)';
       r.joker.disabled = true;
-      r.joker.classList.toggle('used', !!s.jokerUsed);
-      r.joker.querySelector('span').textContent = s.jokerUsed ? 'Déjà utilisé' : 'Encore disponible';
+      const leftR = s.jokersLeft == null ? 0 : s.jokersLeft;
+      r.joker.classList.toggle('used', leftR <= 0);
+      r.joker.querySelector('b').textContent = '50:50 ×' + leftR;
+      r.joker.querySelector('span').textContent = leftR <= 0 ? 'Plus de joker' : (leftR === 1 ? 'Encore 1 joker' : 'Encore ' + leftR + ' jokers');
       r.val.textContent = fmt(s.gain) + ' en jeu';
       const res = s.result;
       r.banner.hidden = !res;
