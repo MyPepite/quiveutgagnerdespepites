@@ -79,7 +79,8 @@
 
 /* ---------- TV : classement ---------- */
 .fin { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.4rem; padding: 2rem 4rem; text-align: center; }
-.fin h1 { font-size: 4.4rem; font-weight: 900; }
+.fin-logo { height: 15vh; width: auto; border-radius: 1.2rem; box-shadow: 0 0 2.5rem rgba(80, 120, 255, 0.4); }
+.fin h1 { font-size: 4rem; font-weight: 900; }
 .winner { font-size: 2.3rem; color: var(--gold-hi); font-weight: 700; }
 .podium { list-style: none; padding: 0; display: flex; align-items: flex-end; gap: 1.6rem; margin-top: 1rem; }
 .pod { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 0.4rem; width: 20rem; padding: 1.2rem 1rem; border-radius: 1.4rem 1.4rem 0.4rem 0.4rem; border: 0.15rem solid var(--gold-lo); background: linear-gradient(180deg, rgba(26, 39, 128, 0.85), rgba(13, 20, 66, 0.95)); }

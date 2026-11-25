@@ -170,6 +170,7 @@
     const rest = top.slice(3).map((p) =>
       h('li', null, h('span', { class: 'rk', text: p.rank }), h('span', { class: 'nm', text: p.name }), h('span', { class: 'sc', text: fmt(p.score) })));
     refs.el = h('div', { class: 'fin', 'data-phase': 'finished' },
+      h('img', { class: 'fin-logo', src: '/logo-pepites.webp', alt: 'Qui veut gagner des pépites ?' }),
       h('h1', { text: 'Partie terminée' }),
       h('p', { class: 'winner', text: headline }),
       h('ol', { class: 'podium' }, podium),
