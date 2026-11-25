@@ -90,7 +90,7 @@
     refs.segA = seg('Passage à la question suivante', [['manual', 'Manuel'], ['auto', 'Automatique']], 'advance');
     refs.start = h('button', { class: 'btn btn-gold start-btn', type: 'button', onclick: () => hostSend('start') }, 'Lancer la partie');
     refs.el = h('div', { class: 'lobby' },
-      h('header', { class: 'lobby-head' }, h('span', { class: 'brand' }, h('img', { src: '/logo.svg', alt: '' }), 'Pépites'), refs.gameName),
+      h('header', { class: 'lobby-head' }, h('img', { class: 'lobby-logo', src: '/logo-pepites.webp', alt: 'Qui veut gagner des pépites ?' }), refs.gameName),
       h('main', { class: 'lobby-main' },
         h('section', { class: 'qr-card' }, refs.qr, h('div', { class: 'qr-caption' }, 'Scannez pour jouer')),
         h('section', { class: 'lobby-side' },

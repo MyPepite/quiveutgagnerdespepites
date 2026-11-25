@@ -7,7 +7,9 @@ body.tv.idle { cursor: none; }
 
 /* ---------- salle d'attente ---------- */
 .lobby { height: 100vh; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; padding: 1.6rem 3rem 1.4rem; gap: 1rem; }
-.lobby-head { display: flex; align-items: baseline; gap: 1.4rem; }
+.lobby-head { display: flex; align-items: center; gap: 1.4rem; }
+.lobby-head .game-name { display: none; }
+.lobby-logo { height: 17vh; width: auto; border-radius: 1.2rem; box-shadow: 0 0 2.5rem rgba(80, 120, 255, 0.35); }
 .lobby-head .brand { font-size: 2.2rem; }
 .lobby-head .game-name { color: var(--gold-hi); font-size: 1.5rem; font-weight: 600; }
 
