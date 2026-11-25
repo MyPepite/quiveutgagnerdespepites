@@ -38,8 +38,7 @@
     const refs = { count: h('div', { class: 'intro-count' }) };
     const paliers = s.ladder.paliers.map((l) => fmt(s.ladder.values[l - 1]));
     refs.el = h('div', { class: 'intro', 'data-phase': 'intro' },
-      h('img', { src: '/logo.svg', alt: '', class: 'intro-logo' }),
-      h('h1', { text: 'Qui veut gagner des pépites ?' }),
+      h('img', { src: '/logo-pepites.webp', alt: 'Qui veut gagner des pépites ?', class: 'intro-logo' }),
       h('ul', { class: 'rules' },
         h('li', { text: s.total + ' questions, de plus en plus difficiles' }),
         h('li', { text: 'Une erreur ne vous élimine pas : vous retombez au dernier palier franchi (' + paliers.join(' puis ') + ' pépites) et vous repartez de là' }),

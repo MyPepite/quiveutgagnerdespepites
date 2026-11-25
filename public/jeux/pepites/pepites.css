@@ -3,8 +3,8 @@
    ===================================================================== */
 
 /* ---------- TV : introduction ---------- */
-.intro { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2rem; text-align: center; padding: 3rem; }
-.intro-logo { width: 9rem; height: 9rem; filter: drop-shadow(0 0 2.5rem rgba(245, 184, 61, 0.55)); animation: float 3.2s ease-in-out infinite; }
+.intro { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.4rem; text-align: center; padding: 2rem 3rem; }
+.intro-logo { width: auto; height: auto; max-width: 44vw; max-height: 32vh; border-radius: 2rem; box-shadow: 0 0 4rem rgba(80, 120, 255, 0.45); animation: float 3.2s ease-in-out infinite; }
 .intro h1 { font-size: 5.2rem; line-height: 1.02; font-weight: 900; letter-spacing: -0.015em; max-width: 60rem; }
 .rules { list-style: none; padding: 0; display: grid; gap: 0.7rem; font-size: 1.9rem; color: var(--muted); max-width: 52rem; }
 .rules li { line-height: 1.3; }
